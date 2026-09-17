@@ -1,11 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final preferences = await SharedPreferences.getInstance();
+  runApp(MyApp(preferences: preferences));
+}
+
+// Special feature 3: a custom color for the online status icon.
+class AppColors extends ThemeExtension<AppColors> {
+  const AppColors({required this.success});
+
+  final Color success;
+
+  @override
+  AppColors copyWith({Color? success}) {
+    return AppColors(success: success ?? this.success);
+  }
+
+  @override
+  AppColors lerp(ThemeExtension<AppColors>? other, double t) {
+    if (other is! AppColors) return this;
+    return AppColors(success: Color.lerp(success, other.success, t)!);
+  }
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.preferences});
+
+  final SharedPreferences preferences;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -14,11 +37,20 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.light;
 
+  @override
+  void initState() {
+    super.initState();
+    // Special feature 2: restore the saved mode when the app starts.
+    final saved = widget.preferences.getString('themeMode');
+    _themeMode = saved == 'dark' ? ThemeMode.dark : ThemeMode.light;
+  }
+
   // Keep the selected theme at the top so the whole app changes.
-  void changeTheme(ThemeMode themeMode) {
+  Future<void> changeTheme(ThemeMode themeMode) async {
     setState(() {
       _themeMode = themeMode;
     });
+    await widget.preferences.setString('themeMode', themeMode.name);
   }
 
   @override
@@ -26,9 +58,12 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'Flutter Theme Lab',
       themeMode: _themeMode,
+      // The explicit AnimatedTheme below handles the transition.
+      themeAnimationDuration: Duration.zero,
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.grey[100],
+        extensions: const [AppColors(success: Color(0xFF1B5E20))],
         // Special feature 1: generate the palette from a seed color.
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blueGrey,
@@ -41,6 +76,7 @@ class _MyAppState extends State<MyApp> {
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
+        extensions: const [AppColors(success: Color(0xFFC8E6C9))],
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.teal,
@@ -51,6 +87,14 @@ class _MyAppState extends State<MyApp> {
           onSecondary: Colors.white,
         ),
       ),
+      // Special feature 4: animate the theme for the entire screen.
+      builder: (context, child) {
+        return AnimatedTheme(
+          duration: const Duration(milliseconds: 500),
+          data: Theme.of(context),
+          child: child!,
+        );
+      },
       home: MyHomePage(changeTheme: changeTheme),
     );
   }
@@ -84,10 +128,8 @@ class MyHomePage extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'Flutter Theme Lab',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             // Part 2, tasks 1 and 3: animated badge, lasting 400 ms.
@@ -104,7 +146,7 @@ class MyHomePage extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.online_prediction,
-                    color: Theme.of(context).colorScheme.onSecondary,
+                    color: Theme.of(context).extension<AppColors>()!.success,
                   ),
                   const SizedBox(width: 8),
                   Text(
