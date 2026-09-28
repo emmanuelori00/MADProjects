@@ -1,17 +1,33 @@
-# movie_watchlist_app
+# CW02
 
-A new Flutter project.
+Emmanuel Gohourou
+CSC 4360
 
-## Getting Started
+This app shows five movies I picked: Inception, The Odyssey (2026), The Platform, Shutter Island, and Obsession.
 
-This project is a starting point for a Flutter application.
+Tap a movie to see its picture, cast, and a short summary. Use the back arrow to go back to the list. I did the undergraduate part, so there isn't a watchlist button.
 
-A few resources to get you started if this is your first Flutter project:
+To run it:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```
+flutter pub get
+flutter run
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+To make the APK:
+
+```
+flutter build apk --release
+```
+
+The APK is in `build/app/outputs/flutter-apk/app-release.apk`. The Word answers and a copy of the APK are in `../submission`.
+
+I used the assignment examples and lecture slides. The movie pictures and info came from these pages:
+
+- [Inception](https://www.warnerbros.com/movies/inception)
+- [The Odyssey](https://universalpictures.ca/movie/the-odyssey/)
+- [The Platform](https://www.netflix.com/title/81128579)
+- [Shutter Island](https://www.paramountpictures.com/movies/shutter-island)
+- [Obsession](https://www.focusfeatures.com/obsession)
+
+The pictures belong to the movie owners. The Platform picture is a scene from the movie.

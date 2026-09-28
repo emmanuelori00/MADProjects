@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../models/movie.dart';
 
 class DetailsScreen extends StatelessWidget {
@@ -18,11 +19,19 @@ class DetailsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: Image.asset(movie.posterPath,
-                height: 300, fit: BoxFit.contain,
-                semanticLabel: '${movie.title} poster')),
+              Center(
+                child: Image.asset(
+                  movie.posterPath,
+                  height: 300,
+                  fit: BoxFit.contain,
+                  semanticLabel: '${movie.title} poster',
+                ),
+              ),
               const SizedBox(height: 20),
-              Text(movie.title, style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                movie.title,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const SizedBox(height: 16),
               Text('Cast', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
@@ -30,7 +39,10 @@ class DetailsScreen extends StatelessWidget {
               const SizedBox(height: 20),
               Text('Synopsis', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
-              Text(movie.synopsis, style: const TextStyle(fontSize: 16, height: 1.5)),
+              Text(
+                movie.synopsis,
+                style: const TextStyle(fontSize: 16, height: 1.5),
+              ),
             ],
           ),
         ),
