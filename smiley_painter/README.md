@@ -1,17 +1,29 @@
-# smiley_painter
+# In-Class Activity 06: Smiley Painter
 
-A new Flutter project.
+Emmanuel Gohourou — CSC 4360
 
-## Getting Started
+The app draws classic, sleepy, and surprised faces. The slider changes the mood and color. Tap the drawing to switch faces, or hold it to choose a random mood and color.
 
-This project is a starting point for a Flutter application.
+## Run
 
-A few resources to get you started if this is your first Flutter project:
+Open this folder in VS Code, start a phone in Android Studio's Device Manager, and run:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```sh
+flutter pub get
+flutter run
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Files for the assignment
+
+- `lib/main.dart`: app code
+- `docs/critical_thinking.md`: short response
+- `docs/geometry_sketch.md`: drawing plan
+- `docs/practice_notes.md`: bullseye and hat-layer observations
+- `docs/evidence/`: phone-emulator screenshots
+- `submission/app-release.apk`: Android install file (kept out of Git)
+- `submission/github-url.txt`: folder URL to use after pushing
+
+The GitHub folder link after pushing is:
+https://github.com/emmanuelori00/MADProjects/tree/main/smiley_painter
+
+Assignment: https://codd.cs.gsu.edu/~lhenry23/mad/ica/act06/v2_smiley/
