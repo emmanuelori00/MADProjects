@@ -16,6 +16,93 @@ void press(Calculator calculator, String sequence) {
 }
 
 void main() {
+  for (final sequence in ['8 ÷ 0 =', '0 ÷ 0 =', '8 ÷ 0 +', '2 + 6 ÷ 0 ×']) {
+    test('$sequence shows an error before calculating', () {
+      final calculator = Calculator();
+      press(calculator, sequence);
+      expect(calculator.display, '0');
+      expect(calculator.errorMessage, contains('Cannot divide by zero'));
+      press(calculator, '= + × =');
+      expect(calculator.display, '0');
+      expect(calculator.errorMessage, contains('Cannot divide by zero'));
+    });
+  }
+
+  for (final trigger in ['=', '+']) {
+    test('Digits start fresh after division by zero triggered by $trigger', () {
+      final calculator = Calculator();
+      press(calculator, '8 ÷ 0 $trigger');
+      press(calculator, '4 2');
+      expect(calculator.errorMessage, isNull);
+      expect(calculator.display, '42');
+      press(calculator, '+ 1 =');
+      expect(calculator.display, '43');
+    });
+  }
+
+  test('AC clears the division error and all previous calculation state', () {
+    final calculator = Calculator();
+    press(calculator, '8 ÷ 0 = AC =');
+    expect(calculator.errorMessage, isNull);
+    expect(calculator.display, '0');
+    press(calculator, '+ 4 =');
+    expect(calculator.display, '4');
+  });
+
+  test(
+    'Incomplete input keeps the pending operation until a number is entered',
+    () {
+      final calculator = Calculator();
+      press(calculator, '7 + = =');
+      expect(calculator.display, '7');
+      expect(calculator.errorMessage, 'Enter a number after the operator.');
+      press(calculator, '2');
+      expect(calculator.errorMessage, isNull);
+      press(calculator, '=');
+      expect(calculator.display, '9');
+    },
+  );
+
+  test('An incomplete-input warning allows operator replacement', () {
+    final calculator = Calculator();
+    press(calculator, '7 + = ×');
+    expect(calculator.errorMessage, isNull);
+    expect(calculator.display, '7');
+    press(calculator, '2 =');
+    expect(calculator.display, '14');
+  });
+
+  test('AC cancels an incomplete calculation and its warning', () {
+    final calculator = Calculator();
+    press(calculator, '7 + = AC');
+    expect(calculator.errorMessage, isNull);
+    expect(calculator.display, '0');
+    press(calculator, '4 + 1 =');
+    expect(calculator.display, '5');
+  });
+
+  test('Zero numerator and fractional division remain valid', () {
+    final calculator = Calculator();
+    press(calculator, '0 ÷ 5 =');
+    expect(calculator.display, '0');
+    expect(calculator.errorMessage, isNull);
+    press(calculator, '5 ÷ 2 =');
+    expect(calculator.display, '2.5');
+    expect(calculator.errorMessage, isNull);
+  });
+
+  test(
+    'Initial equals, operator replacement, and repeated equals are not errors',
+    () {
+      final calculator = Calculator();
+      press(calculator, '=');
+      expect(calculator.errorMessage, isNull);
+      press(calculator, '9 + × 2 = =');
+      expect(calculator.display, '18');
+      expect(calculator.errorMessage, isNull);
+    },
+  );
+
   for (final state in {
     'initial display': '',
     'partial first operand': '1 2',

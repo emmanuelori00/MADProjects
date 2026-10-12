@@ -124,6 +124,20 @@ class _CalculatorPageState extends State<CalculatorPage> {
                               ),
                             ),
                           ),
+                          if (_calculator.errorMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+                              child: Semantics(
+                                liveRegion: true,
+                                child: Text(
+                                  _calculator.errorMessage!,
+                                  key: const ValueKey('error_message'),
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
+                                ),
+                              ),
+                            ),
                           for (final row in [
                             ['7', '8', '9', '÷'],
                             ['4', '5', '6', '×'],

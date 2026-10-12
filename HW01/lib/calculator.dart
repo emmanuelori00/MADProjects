@@ -4,6 +4,10 @@ class Calculator {
   String? _pendingOperator;
   bool _awaitingOperand = true;
   bool _showingResult = false;
+  bool _hasCalculationError = false;
+  String? _errorMessage;
+
+  String? get errorMessage => _errorMessage;
 
   void clearAll() {
     _accumulator = null;
@@ -11,6 +15,8 @@ class Calculator {
     _pendingOperator = null;
     _awaitingOperand = true;
     _showingResult = false;
+    _hasCalculationError = false;
+    _errorMessage = null;
   }
 
   String get display {
@@ -24,6 +30,8 @@ class Calculator {
   }
 
   void enterDigit(String digit) {
+    if (_hasCalculationError) clearAll();
+    _errorMessage = null;
     if (_showingResult) {
       _accumulator = null;
       _pendingOperator = null;
@@ -39,8 +47,10 @@ class Calculator {
   }
 
   void chooseOperator(String operator) {
+    if (_hasCalculationError) return;
+    _errorMessage = null;
     if (!_awaitingOperand && !_showingResult) {
-      _applyOperand();
+      if (!_applyOperand()) return;
     }
     _accumulator ??= 0;
     // A second operator replaces the first until a new operand is entered.
@@ -50,15 +60,26 @@ class Calculator {
   }
 
   void equals() {
+    if (_hasCalculationError) return;
+    if (_awaitingOperand && _pendingOperator != null) {
+      // Give feedback without changing the pending calculation.
+      _errorMessage = 'Enter a number after the operator.';
+      return;
+    }
     if (_awaitingOperand || _showingResult) return;
     // Even a single number followed by equals finishes the entry.
-    _applyOperand();
+    if (!_applyOperand()) return;
     _pendingOperator = null;
     _showingResult = true;
   }
 
-  void _applyOperand() {
+  bool _applyOperand() {
     final operand = double.parse(_currentOperand);
+    if (_pendingOperator == '÷' && operand == 0) {
+      _hasCalculationError = true;
+      _errorMessage = 'Cannot divide by zero. Press AC or enter a new number.';
+      return false;
+    }
     // Commit each pending pair immediately to evaluate left to right.
     switch (_pendingOperator) {
       case '+':
@@ -72,5 +93,6 @@ class Calculator {
       default:
         _accumulator = operand;
     }
+    return true;
   }
 }
