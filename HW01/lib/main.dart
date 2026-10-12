@@ -6,8 +6,15 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isDark = false;
 
   @override
   Widget build(BuildContext context) {
@@ -17,13 +24,32 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
       ),
-      home: const CalculatorPage(),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.indigo,
+          brightness: Brightness.dark,
+        ),
+      ),
+      themeMode: _isDark ? ThemeMode.dark : ThemeMode.light,
+      themeAnimationDuration: const Duration(milliseconds: 300),
+      themeAnimationCurve: Curves.easeInOut,
+      home: CalculatorPage(
+        isDark: _isDark,
+        onToggleTheme: () => setState(() => _isDark = !_isDark),
+      ),
     );
   }
 }
 
 class CalculatorPage extends StatefulWidget {
-  const CalculatorPage({super.key});
+  const CalculatorPage({
+    super.key,
+    required this.isDark,
+    required this.onToggleTheme,
+  });
+
+  final bool isDark;
+  final VoidCallback onToggleTheme;
 
   @override
   State<CalculatorPage> createState() => _CalculatorPageState();
@@ -80,7 +106,19 @@ class _CalculatorPageState extends State<CalculatorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Calculator')),
+      appBar: AppBar(
+        title: const Text('Calculator'),
+        actions: [
+          IconButton(
+            key: const ValueKey('theme_toggle'),
+            tooltip: widget.isDark
+                ? 'Switch to light theme'
+                : 'Switch to dark theme',
+            onPressed: widget.onToggleTheme,
+            icon: Icon(widget.isDark ? Icons.light_mode : Icons.dark_mode),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -102,6 +140,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Container(
+                            key: const ValueKey('display_panel'),
                             height: 120,
                             width: double.infinity,
                             padding: const EdgeInsets.all(20),

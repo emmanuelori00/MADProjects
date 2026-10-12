@@ -1,7 +1,8 @@
 # HW01 Calculator
 
-The app implements the core calculator, Clear/AC, and error handling. It uses a
-StatefulWidget and setState to update the screen. Calculator stores the current
+The app implements the core calculator, Clear/AC, error handling, and a theme
+toggle. It uses StatefulWidget and setState to update the screen.
+Calculator stores the current
 operand, accumulator, pending operator, and input phase. The display is derived
 from those values.
 
@@ -38,6 +39,18 @@ not show warnings. Error messages use text as well as color and a semantic live
 region. On a small screen with enlarged text, the content can scroll so the
 message and AC remain reachable.
 
+## Theme toggle
+
+The moon/sun button in the app bar switches between light and dark themes.
+The background, app bar, display, keypad, text, and error colors follow the
+selected theme. MaterialApp animates the change over 300 milliseconds.
+The button's accessibility label names the theme it will switch to.
+
+Theme state belongs to MyApp, while calculation state stays in CalculatorPage.
+Switching themes keeps the current operand, pending operation, result, and
+error message. AC only resets the calculation, so it keeps the selected theme.
+The app starts in light mode; the selection is not saved after closing the app.
+
 ## Test traces
 
 These sequences are checked in test/calculator_test.dart. The main running-total
@@ -62,6 +75,8 @@ multi-digit input, repeated equals, and a 320 × 568 layout with text scaled to 
 Error tests cover 8 ÷ 0 =, 0 ÷ 0 =, division by zero during a chain, recovery
 with digits or AC, incomplete input, and valid division with a zero numerator.
 Widget tests check both messages, recovery, and error text with enlarged text.
+Theme tests check both directions of the transition, surface colors and text
+contrast, calculation and error state, and the toggle on a narrow screen.
 
 ## Run and check
 
@@ -71,7 +86,7 @@ Widget tests check both messages, recovery, and error text with enlarged text.
     flutter test
     flutter build apk --debug
 
-Clear/AC and error handling are implemented. Theme toggle is selected for a
-later checkpoint. There is no theme switch, percent, sign toggle, or decimal
-input. Division can produce a fractional result. Overflow handling and decimal
-precision improvements are outside this checkpoint.
+The three selected features are Clear/AC, error handling, and theme toggle.
+There is no percent, sign toggle, or decimal input. Division can produce a
+fractional result. Overflow handling and decimal precision improvements are
+outside this checkpoint.
