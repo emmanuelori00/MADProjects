@@ -3,6 +3,33 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hw01/main.dart';
 
 void main() {
+  testWidgets('AC button resets the display and the pending calculation', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const MyApp());
+    for (final step in [
+      ['8', '8'],
+      ['+', '8'],
+      ['2', '2'],
+      ['×', '10'],
+      ['AC', '0'],
+      ['4', '4'],
+      ['+', '4'],
+      ['1', '1'],
+      ['=', '5'],
+      ['AC', '0'],
+      ['=', '0'],
+    ]) {
+      await tester.tap(find.byKey(ValueKey('key_${step[0]}')));
+      await tester.pump();
+      expect(
+        tester.widget<Text>(find.byKey(const ValueKey('display'))).data,
+        step[1],
+        reason: 'After ${step[0]}',
+      );
+    }
+  });
+
   testWidgets('Buttons show the running total and final result', (
     tester,
   ) async {
@@ -25,7 +52,7 @@ void main() {
     }
   });
 
-  testWidgets('All core keys fit a narrow screen with large text', (
+  testWidgets('Core keys and AC fit a narrow screen with large text', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(320, 568);
@@ -36,6 +63,7 @@ void main() {
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     await tester.pumpWidget(const MyApp());
     for (final key in [
+      'AC',
       '0',
       '1',
       '2',

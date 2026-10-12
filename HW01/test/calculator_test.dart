@@ -3,7 +3,9 @@ import 'package:hw01/calculator.dart';
 
 void press(Calculator calculator, String sequence) {
   for (final key in sequence.split(' ')) {
-    if (key == '=') {
+    if (key == 'AC') {
+      calculator.clearAll();
+    } else if (key == '=') {
       calculator.equals();
     } else if (['+', '−', '×', '÷'].contains(key)) {
       calculator.chooseOperator(key);
@@ -14,6 +16,44 @@ void press(Calculator calculator, String sequence) {
 }
 
 void main() {
+  for (final state in {
+    'initial display': '',
+    'partial first operand': '1 2',
+    'pending operator': '8 +',
+    'partial second operand': '8 + 2',
+    'running total': '8 + 2 ×',
+    'finished result': '8 + 2 =',
+  }.entries) {
+    test('AC resets the ${state.key} and allows a fresh calculation', () {
+      final calculator = Calculator();
+      if (state.value.isNotEmpty) press(calculator, state.value);
+      press(calculator, 'AC');
+      expect(calculator.display, '0');
+      press(calculator, '= =');
+      expect(calculator.display, '0');
+      press(calculator, '4 2');
+      expect(calculator.display, '42');
+      press(calculator, '=');
+      expect(calculator.display, '42');
+      press(calculator, '+ 1 =');
+      expect(calculator.display, '43');
+    });
+  }
+
+  test('AC clears a running total before an operator is pressed', () {
+    final calculator = Calculator();
+    press(calculator, '8 + 2 × AC + 4 =');
+    expect(calculator.display, '4');
+  });
+
+  test('Repeated AC stays at zero and discards earlier operands', () {
+    final calculator = Calculator();
+    press(calculator, '8 + 2 × AC AC');
+    expect(calculator.display, '0');
+    press(calculator, '4 + 1 =');
+    expect(calculator.display, '5');
+  });
+
   test('Starts at zero and enters multi-digit operands', () {
     final calculator = Calculator();
     expect(calculator.display, '0');

@@ -1,6 +1,6 @@
 # HW01 Calculator
 
-This checkpoint implements the core left-to-right calculator. The app uses a
+The app implements the core left-to-right calculator and Clear/AC. It uses a
 StatefulWidget and setState to update the screen. Calculator stores the current
 operand, accumulator, pending operator, and input phase. The display is derived
 from those values.
@@ -17,6 +17,7 @@ from those values.
 | Equals without a new operand | Keep the display and pending operation unchanged. |
 | Digit after equals | Start a new calculation with no previous accumulator or operator. |
 | Operator after equals | Continue using the result. |
+| AC at any point | Show 0, clear the operand, accumulator and pending operator, and reset both input-phase flags. |
 
 The invariant is that an operator cannot use the same operand twice. While the
 app is waiting for another operand, operators only change the pending operator
@@ -33,6 +34,13 @@ sequence is also checked by tapping the actual buttons in test/widget_test.dart.
 | 9 + × 2 = | 9, 9, 9, 2, 18 |
 | 7 + = = 2 = | 7, 7, 7, 7, 2, 9 |
 | 8 + 2 = 4 + 1 = | 8, 8, 2, 10, 4, 4, 1, 5 |
+| 8 + 2 × AC 4 + 1 = | 8, 8, 2, 10, 0, 4, 4, 1, 5 |
+
+AC is tested from the initial display, during either operand, after an operator,
+after a running total, and after equals. The tests check repeated AC, equals
+immediately after AC, and a fresh multi-digit calculation. A separate test uses
+8 + 2 × AC + 4 = to confirm the old accumulator cannot affect the new result.
+The widget test taps AC and verifies the display resets and the next result is 5.
 
 The tests also cover all four operations, negative and fractional results,
 multi-digit input, repeated equals, and a 320 × 568 layout with text scaled to 2.
@@ -45,7 +53,8 @@ multi-digit input, repeated equals, and a 320 × 568 layout with text scaled to 
     flutter test
     flutter build apk --debug
 
-Optional pathway features are not part of this checkpoint. There is no AC,
-theme switch, percent, sign toggle, or decimal input. Division can produce a
+Clear/AC is the only added pathway feature in this checkpoint. Error handling
+and theme toggle are selected for later checkpoints. There is no theme switch,
+percent, sign toggle, or decimal input. Division can produce a
 fractional result. Division-by-zero messages and recovery are not implemented;
 Dart's non-finite result is displayed for now.

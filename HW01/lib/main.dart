@@ -34,7 +34,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
 
   void _pressKey(String key) {
     setState(() {
-      if (key == '=') {
+      if (key == 'AC') {
+        _calculator.clearAll();
+      } else if (key == '=') {
         _calculator.equals();
       } else if (['+', '−', '×', '÷'].contains(key)) {
         _calculator.chooseOperator(key);
@@ -44,8 +46,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
     });
   }
 
-  Widget _button(String key, {int flex = 1}) {
+  Widget _button(String key) {
     const labels = {
+      'AC': 'All clear',
       '+': 'Add',
       '−': 'Subtract',
       '×': 'Multiply',
@@ -53,7 +56,6 @@ class _CalculatorPageState extends State<CalculatorPage> {
       '=': 'Equals',
     };
     return Expanded(
-      flex: flex,
       child: Padding(
         padding: const EdgeInsets.all(4),
         child: FilledButton.tonal(
@@ -126,16 +128,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
                             ['7', '8', '9', '÷'],
                             ['4', '5', '6', '×'],
                             ['1', '2', '3', '−'],
-                            ['0', '=', '+'],
+                            ['AC', '0', '=', '+'],
                           ])
                             SizedBox(
                               height: rowHeight,
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  for (final key in row)
-                                    _button(key, flex: key == '0' ? 2 : 1),
-                                ],
+                                children: [for (final key in row) _button(key)],
                               ),
                             ),
                         ],

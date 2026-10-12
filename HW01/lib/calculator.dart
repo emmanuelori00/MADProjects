@@ -5,6 +5,14 @@ class Calculator {
   bool _awaitingOperand = true;
   bool _showingResult = false;
 
+  void clearAll() {
+    _accumulator = null;
+    _currentOperand = '0';
+    _pendingOperator = null;
+    _awaitingOperand = true;
+    _showingResult = false;
+  }
+
   String get display {
     if (_awaitingOperand || _showingResult) {
       final result = (_accumulator ?? 0).toString();
