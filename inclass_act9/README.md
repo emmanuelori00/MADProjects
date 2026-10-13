@@ -40,10 +40,40 @@ installed app or its saved SQLite rows. No migration or device install was run.
 
 Before upgrading
 
-Use the existing Part I installation. Record its current guest IDs, names,
-ages, and count, and capture evidence/T1_before.png before changing the schema.
-Do not uninstall the app or clear its storage. Saved device rows have not been
-checked in this starting checkpoint. Copying source does not copy device data.
+On October 13, 2026, the existing Part I app was opened on Pixel_9,
+emulator-5554, Android 17 / API 37. The emulator was started with
+-no-snapshot-load, without clearing its data. No new APK was installed.
+
+The source backup contains 33 tracked Part I files, excluding its submission
+folder. Every archived file was checked against the source. A separate copy of
+the existing MyDatabase.db was made before opening the app. Both backups are
+stored locally outside this repository; copying source alone does not back up
+the device database.
+
+The copied database was opened read-only. The checks returned:
+
+PRAGMA integrity_check: ok
+PRAGMA user_version: 1
+SELECT _id, name, age FROM my_table ORDER BY _id:
+ID 2: River, age 35
+ID 3: Acorn, age 0
+ID 4: Oak, age 130
+SELECT COUNT(*) FROM my_table: 3
+
+The app screen shows the same IDs, values, and count in evidence/T1_before.png.
+These are fictional guest records carried over from Part I. The database file
+was copied again after the screen capture and was byte-for-byte unchanged.
+
+The current schema is:
+CREATE TABLE my_table (
+  _id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  age INTEGER NOT NULL
+)
+
+This records the starting data only. The version-2 upgrade and fresh-create
+checks have not been run. T1a must keep all three rows above unchanged. Do not
+uninstall this app, clear its storage, or rename its database before that test.
 
 Course sources
 
