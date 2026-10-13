@@ -14,16 +14,49 @@ class DatabaseHelper {
     final directory = await getApplicationDocumentsDirectory();
     _db = await openDatabase(
       join(directory.path, 'MyDatabase.db'),
-      version: 1,
+      version: 2,
+      onConfigure: (database) async {
+        await database.execute('PRAGMA foreign_keys = ON');
+      },
       onCreate: (database, version) async {
-        await database.execute(
-          'CREATE TABLE $table ('
-          '$columnId INTEGER PRIMARY KEY, '
-          '$columnName TEXT NOT NULL, '
-          '$columnAge INTEGER NOT NULL)',
-        );
+        await _createPartOneTables(database);
+        await _createCatalogueTables(database);
+      },
+      onUpgrade: (database, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await _createCatalogueTables(database);
+        }
       },
     );
+  }
+
+  Future<void> _createPartOneTables(Database database) async {
+    await database.execute(
+      'CREATE TABLE $table ('
+      '$columnId INTEGER PRIMARY KEY, '
+      '$columnName TEXT NOT NULL, '
+      '$columnAge INTEGER NOT NULL)',
+    );
+  }
+
+  Future<void> _createCatalogueTables(Database database) async {
+    await database.execute(
+      'CREATE TABLE folders ('
+      'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+      'name TEXT NOT NULL UNIQUE, '
+      'created_at TEXT NOT NULL)',
+    );
+    await database.execute(
+      'CREATE TABLE cards ('
+      'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+      'title TEXT NOT NULL, '
+      'suit TEXT NOT NULL, '
+      "notes TEXT NOT NULL DEFAULT '', "
+      'image_ref TEXT, '
+      'folder_id INTEGER NOT NULL, '
+      'FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE CASCADE)',
+    );
+    await database.execute('CREATE INDEX idx_cards_folder_id ON cards(folder_id)');
   }
 
   Future<int> insert(Map<String, dynamic> row) => _db.insert(table, row);

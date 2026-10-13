@@ -14,10 +14,10 @@ The package name stays inclass_act8 and the Android app ID stays
 com.example.inclass_act8. This lets the new project update the same installed
 Part I app instead of starting with a different app's empty storage.
 
-The existing helper opens MyDatabase.db in the app documents folder. It is
-still version 1. Its my_table columns are _id, name, and age. The guest screen,
-helper, dependencies, lockfile, and five existing widget tests were carried
-over unchanged. The folder/card tables and version-2 upgrade are not added yet.
+The helper opens MyDatabase.db in the app documents folder. The starting
+version was 1, with my_table columns _id, name, and age. The guest screen,
+helper, dependencies, lockfile, and five existing widget tests were copied
+from Part I. The helper now upgrades this same database to version 2.
 
 Setup
 
@@ -36,7 +36,7 @@ Starting checks
 
 On October 13, 2026, flutter analyze reported no issues and all five existing
 widget tests passed. These tests use a fake helper. They do not verify the
-installed app or its saved SQLite rows. No migration or device install was run.
+installed app or its saved SQLite rows. Device checks are recorded below.
 
 Before upgrading
 
@@ -64,16 +64,88 @@ The app screen shows the same IDs, values, and count in evidence/T1_before.png.
 These are fictional guest records carried over from Part I. The database file
 was copied again after the screen capture and was byte-for-byte unchanged.
 
-The current schema is:
+The original guest schema is:
 CREATE TABLE my_table (
   _id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   age INTEGER NOT NULL
 )
 
-This records the starting data only. The version-2 upgrade and fresh-create
-checks have not been run. T1a must keep all three rows above unchanged. Do not
-uninstall this app, clear its storage, or rename its database before that test.
+Version-2 database checkpoint
+
+One folder can have many cards. Each card's folder_id points to folders.id.
+The helper follows the lifecycle pattern from the assignment. onConfigure
+turns on foreign keys. onCreate builds the guest table and catalogue tables.
+onUpgrade adds only the catalogue tables when oldVersion is below 2. Each
+statement is awaited inside the callback's existing transaction. Nothing is
+seeded, and no old table or database is deleted or renamed.
+
+The added schema is:
+CREATE TABLE folders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE cards (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  suit TEXT NOT NULL,
+  notes TEXT NOT NULL DEFAULT '',
+  image_ref TEXT,
+  folder_id INTEGER NOT NULL,
+  FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_cards_folder_id ON cards(folder_id);
+
+Cascade fits this lab because a folder owns its cards. Restricting deletion
+would be better if a user must move the cards first. Records needed for an
+audit should be archived instead of deleted with their parent.
+
+Checks on October 13, 2026
+
+T1a upgrade: PASS. The debug build updated the existing Pixel_9 installation
+with adb install -r. Expected: version 2 with the same three guest rows.
+Observed: ID 2 River age 35, ID 3 Acorn age 0, ID 4 Oak age 130; count 3.
+The original guest table definition is unchanged. The app was not uninstalled
+and its storage was not cleared.
+
+T1b fresh schema: PASS. Pixel_10a, emulator-5556, had no installation of
+com.example.inclass_act8 before installing this build. Expected: version 2
+with all three tables and no records. Observed: my_table, folders, and cards
+exist; each has zero records. Opening an empty folder is still pending because
+the folder screen belongs to a later checkpoint. Full T1b is not complete yet.
+
+Read-only SQL checks on both app connections returned:
+PRAGMA user_version: 2
+PRAGMA foreign_keys: 1
+PRAGMA foreign_key_list(cards): folder_id -> folders.id, ON DELETE CASCADE
+PRAGMA index_list(cards): idx_cards_folder_id
+PRAGMA foreign_key_check: no rows
+PRAGMA integrity_check: ok
+SELECT COUNT(*) FROM folders: 0
+SELECT COUNT(*) FROM cards: 0
+
+SELECT name, sql FROM sqlite_master confirmed the table and index definitions
+shown above on both targets. The guest rows were checked with:
+SELECT _id, name, age FROM my_table ORDER BY _id;
+
+These checks used a temporary debug entry point that called the actual helper's
+init, reused its open sqflite connection, printed query results to adb logcat,
+and opened the unchanged guest screen. It made no extra data writes. Using
+the app connection matters because foreign_keys is a connection setting.
+The diagnostic entry point is not part of the project or submission.
+
+The normal debug build was then installed on Pixel_9. Its guest screen still
+shows the same three records. Pixel_10a still has the temporary diagnostic
+build: replacing it returned INSTALL_FAILED_INSUFFICIENT_STORAGE, including
+with a smaller ARM64 build. Its schema checks above passed before this storage
+problem. No emulator data was cleared. The fresh target needs enough space
+before testing the later folder screen and final APK.
+
+flutter analyze: no issues (evidence/analysis_output.txt).
+flutter test: all five existing widget tests passed. These cover the guest
+screen, not folder/card actions. Folder/card models, actions, screens, and
+tests T2-T6 have not started. Cascade deletion behavior will be tested in T5.
 
 Course sources
 
