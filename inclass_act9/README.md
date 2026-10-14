@@ -3,84 +3,56 @@ In-Class Activity 09 - Local Storage Part II
 Emmanuel Gohourou
 Student ID: ogohourou1
 CSC 4360 - Undergraduate
+Branch: assignment/inclass09
 
-Starting point
+Setup and starting code
 
-This project was created with flutter create inside inclass_act9. It carries
-forward the working guest roster from inclass_act8. The original inclass_act8
-folder and its committed source remain unchanged.
+Created with flutter create inside inclass_act9, then carried forward the
+working guest roster, helper, dependencies, lockfile, and tests from
+inclass_act8. The original Part I folder is unchanged. The Flutter package
+stays inclass_act8 and the Android app ID stays com.example.inclass_act8 so
+this app can update the same installation and keep its MyDatabase.db file.
 
-The package name stays inclass_act8 and the Android app ID stays
-com.example.inclass_act8. This lets the new project update the same installed
-Part I app instead of starting with a different app's empty storage.
-
-The helper opens MyDatabase.db in the app documents folder. The starting
-version was 1, with my_table columns _id, name, and age. The guest screen,
-helper, dependencies, lockfile, and five existing widget tests were copied
-from Part I. The helper now upgrades this same database to version 2.
-
-Setup
-
-Flutter 3.47.2 stable
-Dart 3.13.2
-Android target
-
-Run these commands from this folder:
+Flutter 3.47.2 stable; Dart 3.13.2; Android.
+Dependencies: sqflite, path_provider, and path. Exact versions are in
+pubspec.lock. Run these commands from inclass_act9:
 
 flutter pub get
 flutter analyze
 flutter test
 flutter run -d <device-id>
 
-Starting checks
+What the app does
 
-On October 13, 2026, flutter analyze reported no issues and all five existing
-widget tests passed. These tests use a fake helper. They do not verify the
-installed app or its saved SQLite rows. Device checks are recorded below.
+Folders show their card counts, including zero. A folder opens only its own
+cards. One form handles Add and Edit, with a title, suit, folder, and optional
+notes. Duplicate card titles are allowed; edits and deletes use integer IDs.
+Cancel does not save. Deletion asks for confirmation and names the record.
 
-Before upgrading
+Names and titles are trimmed and cannot be blank. Folder names are unique
+and case-sensitive. Duplicate names show an error without replacing the
+existing folder. Buttons are disabled while work is pending. Failed writes
+keep input. A failed refresh after a successful write retries only the read.
+The Guest roster button opens the original Part I screen.
 
-On October 13, 2026, the existing Part I app was opened on Pixel_9,
-emulator-5554, Android 17 / API 37. The emulator was started with
--no-snapshot-load, without clearing its data. No new APK was installed.
+Image choice: new cards have image_ref = SQL NULL and show a suit symbol.
+The screen always uses the symbol, including for unusable old references.
+This works without network access but does not display custom artwork.
+No image assets, picker, or extra dependencies were added.
 
-The source backup contains 33 tracked Part I files, excluding its submission
-folder. Every archived file was checked against the source. A separate copy of
-the existing MyDatabase.db was made before opening the app. Both backups are
-stored locally outside this repository; copying source alone does not back up
-the device database.
+Database
 
-The copied database was opened read-only. The checks returned:
+The same MyDatabase.db upgrades from version 1 to 2. onConfigure enables
+foreign keys. onCreate makes the original table and new catalogue tables.
+onUpgrade adds only the catalogue tables when oldVersion < 2. Statements
+are awaited inside the callback's transaction. No tables are dropped, no
+database is renamed, and no sample rows are automatically inserted.
 
-PRAGMA integrity_check: ok
-PRAGMA user_version: 1
-SELECT _id, name, age FROM my_table ORDER BY _id:
-ID 2: River, age 35
-ID 3: Acorn, age 0
-ID 4: Oak, age 130
-SELECT COUNT(*) FROM my_table: 3
-
-The app screen shows the same IDs, values, and count in evidence/T1_before.png.
-These are fictional guest records carried over from Part I. The database file
-was copied again after the screen capture and was byte-for-byte unchanged.
-
-The original guest schema is:
 CREATE TABLE my_table (
   _id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   age INTEGER NOT NULL
-)
-
-Version-2 database checkpoint
-
-One folder can have many cards. Each card's folder_id points to folders.id.
-The helper follows the lifecycle pattern from the assignment. onConfigure
-turns on foreign keys. onCreate builds the guest table and catalogue tables.
-onUpgrade adds only the catalogue tables when oldVersion is below 2. Each
-statement is awaited inside the callback's existing transaction. Nothing is
-seeded, and no old table or database is deleted or renamed.
-
-The added schema is:
+);
 CREATE TABLE folders (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL UNIQUE,
@@ -97,198 +69,161 @@ CREATE TABLE cards (
 );
 CREATE INDEX idx_cards_folder_id ON cards(folder_id);
 
-Cascade fits this lab because a folder owns its cards. Restricting deletion
-would be better if a user must move the cards first. Records needed for an
-audit should be archived instead of deleted with their parent.
+A folder owns its cards, so deleting the folder also deletes those cards.
+Restricting deletion would be better if the user must move the cards first.
+For billing or audit records, keeping or archiving the parent is safer than
+silently deleting its children.
 
-Checks on October 13, 2026
+Tests - October 13, 2026
 
-T1a upgrade: PASS. The debug build updated the existing Pixel_9 installation
-with adb install -r. Expected: version 2 with the same three guest rows.
-Observed: ID 2 River age 35, ID 3 Acorn age 0, ID 4 Oak age 130; count 3.
-The original guest table definition is unchanged. The app was not uninstalled
-and its storage was not cleared.
+Upgrade target: Pixel_9, emulator-5554, Android 17 / API 37, ARM64.
+Fresh target: separate disposable InClass09_Test profile, emulator-5556,
+Android 17 / API 37, ARM64. It had no installation of this app before T1b.
+An earlier Pixel_10a check ran out of storage; the completed fresh test below
+used InClass09_Test. No existing emulator's data was cleared.
 
-T1b fresh schema: PASS. Pixel_10a, emulator-5556, had no installation of
-com.example.inclass_act8 before installing this build. Expected: version 2
-with all three tables and no records. Observed: my_table, folders, and cards
-exist; each has zero records. Opening an empty folder on this separate target is still pending. Full T1b
-is not complete yet.
+Before the original upgrade, the Part I database and 33 tracked source files
+were backed up outside the repository in InClass09-backup on the external
+drive. The database was version 1 with the three rows shown in Q2 below.
+T1_before.png is the actual pre-upgrade screenshot, kept unchanged.
 
-Read-only SQL checks on both app connections returned:
+T1a's real version-1 upgrade was completed at the schema checkpoint. This run
+rechecked its preserved rows and schema rather than resetting the database.
+T1b and T2-T6 were then completed in order. Earlier disposable checkpoint
+folders/cards had been removed. T2 started with zero folders and cards on
+Pixel_9; generated IDs were not reset. FreshFolder belongs only to the
+separate fresh target.
+
+Device tests used the real screens and DatabaseHelper with a temporary debug
+entry point. It logged actual helper return values and read-only queries on
+the app's open sqflite connection. It did not seed rows or replace database
+methods. This entry point is outside the project and submission. The normal
+debug build was restored after testing. These are not release APK tests.
+
+Test | Action/input | Expected | Observed | Result
+--- | --- | --- | --- | ---
+T1a | Upgrade the existing Part I install, then recheck | Version 2; all original IDs/values kept; tables/index added | Q1 schema checks passed; Q2 rows stayed (2, River, 35), (3, Acorn, 0), (4, Oak, 130), count 3 | PASS
+T1b | Install on fresh InClass09_Test; create/open FreshFolder | All three tables; empty folder opens without error | Q1 checks passed; initially all tables empty. insertFolder returned 1; FreshFolder ID 1 opened with count 0 and the empty message; guest count 0 | PASS
+T2 | Create Atlas and Harbor; add two Compass cards and one Signal | Distinct card IDs; counts 2 and 1; lists filtered by folder | insertFolder returned 6 and 7. insertCard returned 6, 7, 8. Atlas 6 held Compass 6/Hearts and Compass 7/Diamonds; Harbor 7 held Signal 8/Spades. Signal notes = Harbor notes, image_ref = NULL. Counts 2 and 1; each screen showed only its own cards | PASS
+T3 Save | Edit Compass ID 6 to Compass revised, notes Atlas notes | Return 1; only ID 6 changes | updateCard id 6 returned 1; ID 7 and Signal 8 unchanged; counts 2 and 1 | PASS
+T3 Cancel | Edit ID 7 to Canceled Compass / Not saved, then Cancel edit | No write | ID 7 stayed Compass / Diamonds / empty notes; all other rows and counts unchanged | PASS
+T4 | System App info, Force stop, then relaunch same app | Same IDs, values, folders, counts; no duplicate rows | Cold launch; every row matched the baseline below; Atlas count 2, Harbor count 1; Q1 checks still passed | PASS
+T5 Card Cancel | Cancel deleting Compass ID 7 | No change | Read-only comparison matched all pre-delete rows; Atlas count 2 | PASS
+T5 Card Delete | Confirm deletion of Compass ID 7 | Return 1; Atlas count 1 | deleteCard id 7 returned 1; ID 6 remained; Harbor/Signal unchanged | PASS
+T5 Folder Cancel | Cancel deleting Atlas ID 6 | Folder and remaining card stay | Atlas 6 and card 6 remained; Harbor 7 and card 8 unchanged; counts 1 and 1 | PASS
+T5 Folder Delete | Confirm deletion of Atlas ID 6 | Return 1 parent row; cascade its remaining card only | deleteFolder id 6 returned 1; card 6 removed; Harbor 7/Signal 8 stayed. Q5 found no card with folder_id 6 | PASS
+T6 Fallback | Open Signal ID 8 with NULL image_ref | Suit symbol, title, notes remain visible | Spades symbol, Signal, ID 8, Harbor notes, and count 1 visible | PASS
+T6 Title | Add with title containing three spaces | Visible error; no insert | Enter a card title. No insert ID returned; rows unchanged | PASS
+T6 Folder | Create folder with three spaces | Visible error; no insert | Enter a folder name. No insert ID returned; rows unchanged | PASS
+T6 Duplicate | Separately create Harbor again | Visible duplicate error; original folder kept | That folder name already exists. Choose another name. Input kept; no insert ID returned. Harbor 7/Signal 8 unchanged | PASS
+
+Q1 - Schema query results on both app connections in T1
+
 PRAGMA user_version: 2
 PRAGMA foreign_keys: 1
-PRAGMA foreign_key_list(cards): folder_id -> folders.id, ON DELETE CASCADE
-PRAGMA index_list(cards): idx_cards_folder_id
+PRAGMA foreign_key_list(cards): folder_id -> folders.id; on_delete = CASCADE
+PRAGMA index_list(cards): idx_cards_folder_id, unique = 0
 PRAGMA foreign_key_check: no rows
 PRAGMA integrity_check: ok
-SELECT COUNT(*) FROM folders: 0
-SELECT COUNT(*) FROM cards: 0
+SELECT name, sql FROM sqlite_master confirmed the four definitions above.
+The original my_table definition was unchanged. foreign_keys was checked on
+the open app connection, not on a separate copied database connection.
+Source: lib/database_helper.dart, init and _createCatalogueTables.
 
-SELECT name, sql FROM sqlite_master confirmed the table and index definitions
-shown above on both targets. The guest rows were checked with:
+Q2 - Actual original rows before and after the T1 upgrade
+
 SELECT _id, name, age FROM my_table ORDER BY _id;
+Before (version 1): (2, River, 35), (3, Acorn, 0), (4, Oak, 130)
+After (version 2):  (2, River, 35), (3, Acorn, 0), (4, Oak, 130)
+Count before/after: 3 / 3. These same rows also remained after T2-T6.
+On the fresh T1b target this query returned no rows, as expected.
 
-These checks used a temporary debug entry point that called the actual helper's
-init, reused its open sqflite connection, printed query results to adb logcat,
-and opened the unchanged guest screen. It made no extra data writes. Using
-the app connection matters because foreign_keys is a connection setting.
-The diagnostic entry point is not part of the project or submission.
+Q3 - Baseline immediately before T4 and result after T4
 
-The normal debug build was then installed on Pixel_9. Its guest screen still
-shows the same three records. Pixel_10a still has the temporary diagnostic
-build: replacing it returned INSTALL_FAILED_INSUFFICIENT_STORAGE, including
-with a smaller ARM64 build. Its schema checks above passed before this storage
-problem. No emulator data was cleared. The fresh target needs enough space
-before testing the later folder screen and final APK.
+SELECT id, name, created_at FROM folders ORDER BY id;
+6 | Atlas  | 2026-10-13T21:00:27.255227
+7 | Harbor | 2026-10-13T21:00:32.828419
 
-flutter analyze: no issues (evidence/analysis_output.txt).
-flutter test: all five existing widget tests passed. These cover the guest
-screen, not folder/card actions. Full screen tests T2-T6 are still pending.
+SELECT id, title, suit, notes, image_ref, folder_id FROM cards ORDER BY id;
+6 | Compass revised | Hearts   | Atlas notes  | NULL | 6
+7 | Compass         | Diamonds | ''           | NULL | 6
+8 | Signal          | Spades   | Harbor notes | NULL | 7
 
-Models and database methods checkpoint
+SELECT folders.id, folders.name, COUNT(cards.id)
+FROM folders LEFT JOIN cards ON folders.id = cards.folder_id
+GROUP BY folders.id ORDER BY folders.id;
+6 | Atlas  | 2
+7 | Harbor | 1
 
-Folder and CardRecord now convert between Dart objects and database maps.
-Folder also holds the card count from the query; that count is not written
-back as a table column. New records get their IDs from SQLite inserts.
+All fields above matched after restart. The three original guests also
+matched Q2. Each folder was opened again to check the displayed records.
 
-DatabaseHelper has insertFolder, getFoldersWithCounts, getCards, insertCard,
-updateCard, deleteCard, and deleteFolder. The LEFT JOIN keeps empty folders
-with count zero. Reads filter by folder ID; edits and deletes use row IDs and
-bound values. Update/delete return the number of affected rows, including 0
-when a row is missing. Errors pass to the caller for the future screen to show.
+Q4 - Exact T4 restart procedure
 
-The helper trims folder names and card titles and rejects blank values. It
-checks the four allowed suits. The foreign key rejects a missing parent.
-Duplicate folder names are rejected by UNIQUE without replacing the old row.
-Names remain case-sensitive, and duplicate card titles are allowed. Omitted
-notes are empty text; an omitted or blank image reference becomes SQL NULL.
+No debugger was attached. Opened Android system App info for
+com.example.inclass_act8, tapped Force stop, then OK. pidof returned no app
+process and Android reported stopped=true. Relaunched the same installation:
+adb -s emulator-5554 shell am start -W -n com.example.inclass_act8/.MainActivity
+Android reported LaunchState: COLD and Status: ok. No install, uninstall,
+Clear storage, hot reload, or hot restart occurred between the two snapshots.
+evidence/T4_after.png shows the reopened Atlas cards.
 
-On October 13, 2026, a temporary debug entry point tested these methods against
-the real SQLite database on Pixel_9. All 23 checks passed. This entry point
-used disposable records and is outside the project and submission.
+Q5 - T5 cascade and T6 final queries
 
-Expected and observed results:
-- Temporary folders received IDs 1, 2, and 3; empty folders had count 0.
-- A padded name containing an apostrophe was trimmed and saved correctly with
-  an ISO date. Its lowercase version was allowed; an exact duplicate failed.
-- Cards 1 and 2 had the same title in folder 1. Card 3 belonged to folder 2.
-  Counts were 2 and 1, and each query returned only its folder's cards.
-- Editing card 1 returned 1 and saved its title and notes. Card 2 was unchanged.
-- Blank names/titles, an invalid suit, folder ID 0, and updating without a
-  saved card ID were rejected. Inserting under deleted folder 3 also failed.
-- Deleting card 2 returned 1, then 0 when repeated. Updating that missing card
-  returned 0. Folder 1's count became 1.
-- Deleting folder 1 returned 1 and removed its remaining card. Repeating it
-  returned 0. Folder 2 and card 3 stayed intact until test cleanup.
-- Cleanup removed all temporary folders/cards. The three original guest rows
-  stayed unchanged. Generated IDs were not reset; later tests must use the
-  actual IDs returned by inserts.
+SELECT id FROM cards WHERE folder_id = 6;
+Result after deleting Atlas: no rows.
+SELECT id, name FROM folders ORDER BY id;
+Result: (7, Harbor)
+SELECT id, title, suit, notes, image_ref, folder_id FROM cards ORDER BY id;
+Result: (8, Signal, Spades, Harbor notes, NULL, 7)
+Folder count query: (7, Harbor, 1)
+PRAGMA foreign_key_check: no rows
+PRAGMA integrity_check: ok
 
-flutter analyze reported no issues and all five existing widget tests passed.
-These method checks do not replace T2-T6. Screen checks are recorded separately
-below, and the complete card workflow and restart tests are still pending.
-The normal debug app was restored and launched successfully on Pixel_9. A
-final read-only database check found the same three guests, zero folders,
-zero cards, and no orphan rows.
+A row-by-row comparison before/after T6 matched my_table, folders, and cards.
+No successful write followed T5. Signal's null reference proves the suit
+fallback works; it does not test downloading or caching custom artwork.
 
-Folder screen checkpoint
+Other checks and evidence
 
-The app now starts on the Folders screen. It lists folder names and card
-counts, creates folders, and asks before deleting a named folder and its
-cards. Guest roster opens the original Part I screen; Back returns to Folders.
-Card actions were added in the checkpoint below.
+flutter analyze: no issues, recorded in evidence/analysis_output.txt.
+flutter test: all 19 passed (5 guest, 6 folder, 8 card tests). These include
+busy states, failed reads/writes, missing rows, folder moves, all four suit
+symbols, and safe refresh retries. Failures use a fake helper; no device
+storage failure was forced. Earlier real-database method checks also verified
+missing-row update/delete returns 0 and invalid foreign keys are rejected.
 
-The screen follows the Part I loading and error-handling pattern. Blank names
-are rejected. Duplicate names show a message and keep the entered name. A
-failed write also keeps input. Controls are disabled while work is pending.
-After a successful write, Refresh retries only the read if loading fails.
-Missing rows show a zero-deletion message instead of claiming success.
+Normal debug build command: flutter build apk --debug --target-platform android-arm64
+Build passed. After T6, adb install -r restored this build on Pixel_9.
+Harbor/Signal and the three original guest rows were checked again.
 
-The new folder widget tests cover empty/error states, folder counts, trimmed
-and duplicate names, guest navigation, cancel/confirmed deletion by ID,
-pending/failed writes, missing rows, and failed refreshes after create/delete.
-The five existing roster tests now open the roster screen directly.
+Required repository evidence:
+evidence/T1_before.png - original Part I rows before the upgrade
+evidence/T2_cards.png - two distinct Compass cards in Atlas
+evidence/T4_after.png - saved edit and both IDs after cold restart
+evidence/analysis_output.txt - actual analyzer output
 
-October 13, 2026 results: flutter analyze found no issues. All 11 widget tests
-passed (five roster tests and six folder tests). The tests simulate failures;
-no forced storage failure was performed on the emulator.
+Rubric mapping and remaining work
 
-Pixel_9 device checks also passed with the normal debug APK:
-- Empty folders showed an empty message. A blank name showed validation text.
-- Creating CheckpointFolder returned actual folder ID 4 with a displayed count
-  of 0. Trying that name again showed the duplicate message and kept the input.
-  A database query confirmed there was still only that one folder.
-- Delete confirmation named CheckpointFolder and warned about its cards.
-  Cancel kept the folder. Confirming deletion then returned to the empty list.
-- Guest roster showed IDs 2, 3, and 4 with the same names and ages. Back
-  returned to Folders. A final read-only query confirmed zero folders and zero
-  cards after cleanup, with the original three guests unchanged.
+Schema/data preservation: lib/database_helper.dart; T1, T4, T5; Q1-Q5.
+Models/helper/CRUD: lib/folder.dart, lib/card_record.dart,
+lib/database_helper.dart, lib/folder_screen.dart, lib/card_screen.dart;
+T2, T3, T5, T6 and test/.
+Images/usability: lib/card_screen.dart, lib/folder_screen.dart; T1b and T6.
+Testing/evidence: the matrix and evidence/ above. Release smoke test pending.
+Critical thinking: reflection prompts 1-3 and two U-pool questions pending.
+README/delivery: this file, pubspec.yaml, pubspec.lock, and source files.
+Final release APK, reflection document, and submission folder are pending.
+Nothing has been submitted to iCollege.
 
-This checkpoint tested empty-folder deletion. Deleting a folder that contains
-cards was checked at the database-method level earlier; the complete UI test
-with cards is still pending. No card screens or final submission files were
-created in this checkpoint.
-
-Card screen checkpoint
-
-Tapping a folder now opens its cards by folder ID. The same form adds and
-edits a card. It requires a nonblank title, one of the four suits, and an
-existing folder. Notes are optional. Selecting a different folder saves that
-folder's ID. Returning to Folders reloads its card counts.
-
-Duplicate titles are allowed. The list shows IDs so the two cards can be told
-apart. Edits and deletes target those IDs. Cancel edit makes no write. Delete
-confirmation shows the title and ID before changing the database. Missing
-rows show a zero-update/delete message instead of claiming success.
-
-The form keeps input after a failed write and disables controls while busy.
-After a successful write it clears the form, then reloads the list. If that
-read fails, Refresh retries only the read. Loading, empty, and failed-read
-states are shown separately. The screen contains no SQL.
-
-Image choice: new cards leave image_ref as SQL NULL and show a suit symbol.
-This is the simple option allowed by the assignment. The screen always uses
-the symbol, even if an older row has an unusable reference. It does not fetch
-images or need network access. The tradeoff is that it cannot show custom
-artwork. No image assets, picker, or extra dependencies were added.
-
-October 13, 2026 automated checks: flutter analyze found no issues. All 19
-widget tests passed: five roster, six folder, and eight card-screen tests.
-The card tests cover validation/defaults, all four symbols, duplicate-title
-identity, edit/delete cancellation, folder moves and count refresh, missing
-rows/parents, failed reads/writes, and safe refresh retries. Failure cases
-use a fake helper; they do not claim a forced device-storage failure.
-
-Pixel_9 checks with the normal debug APK also passed:
-- Opened temporary folder CheckpointCards (actual ID 5). It showed the empty
-  card message. Submitting a blank title showed validation without adding a row.
-- Added two cards named CheckpointCard, with actual IDs 4 and 5. Card 4 had
-  First notes; card 5 had empty notes. Both had Hearts and a NULL image_ref.
-  The list showed two cards and their suit symbols.
-- Changed card 5's title in the form, then canceled. A read-only database
-  query confirmed both original titles and values were unchanged.
-- Saved card 4 as CheckpointRevised with Clubs and Updated notes. The query
-  confirmed only ID 4 changed. ID 5 still had its original title and values.
-- Canceled deleting ID 5; the list still showed two cards. Confirmed deletion
-  next; only ID 4 remained. Back on Folders, the count refreshed to 1.
-- Deleted the temporary folder through its confirmation. Its remaining card
-  was removed too. The final database had zero folders/cards, no orphan rows,
-  and integrity_check returned ok. Guest IDs 2, 3, and 4 were unchanged.
-
-These were checkpoint tests with temporary data. The assignment's full T1-T6
-sequence, required final screenshots, release APK, and reflection document
-are still pending. No submission files were created in this checkpoint.
+Final submission folder will contain only:
+github_link.txt
+Activity09_Gohourou_Emmanuel.apk
+Gohourou_Emmanuel_CriticalThinking.docx
 
 Course sources
 
-In-Class Activity 09 MW Section - Local Storage Part II:
+Assignment (takes priority where the lecture differs):
 https://codd.cs.gsu.edu/~lhenry23/mad/ica/act09/v2/index2.html
-
-Local Storage Part II lecture:
+Lecture:
 https://codd.cs.gsu.edu/~lhenry23/mad/ica/act09/v2/notes/activity09-lecture.html
-
-The assignment page takes priority where the lecture differs. The work will
-use the undergraduate requirements. Final submission files belong in this
-project's submission folder: github_link.txt, Activity09_Gohourou_Emmanuel.apk,
-and Gohourou_Emmanuel_CriticalThinking.docx.
