@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'database_helper.dart';
+import 'folder_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,8 +33,11 @@ class DirectoryApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'Fall Festival Roster',
-    home: DirectoryScreen(helper: helper),
+    title: 'Card Catalogue',
+    home: FolderScreen(
+      helper: helper,
+      guestScreen: DirectoryScreen(helper: helper),
+    ),
   );
 }
 

@@ -186,11 +186,49 @@ Expected and observed results:
   actual IDs returned by inserts.
 
 flutter analyze reported no issues and all five existing widget tests passed.
-These method checks do not replace T2-T6: the folder/card screens, visible
-validation feedback, cancel/confirmation flows, and restart tests come later.
+These method checks do not replace T2-T6. Screen checks are recorded separately
+below, and the complete card workflow and restart tests are still pending.
 The normal debug app was restored and launched successfully on Pixel_9. A
 final read-only database check found the same three guests, zero folders,
 zero cards, and no orphan rows.
+
+Folder screen checkpoint
+
+The app now starts on the Folders screen. It lists folder names and card
+counts, creates folders, and asks before deleting a named folder and its
+cards. Guest roster opens the original Part I screen; Back returns to Folders.
+Opening a folder and managing its cards belong to the next checkpoint.
+
+The screen follows the Part I loading and error-handling pattern. Blank names
+are rejected. Duplicate names show a message and keep the entered name. A
+failed write also keeps input. Controls are disabled while work is pending.
+After a successful write, Refresh retries only the read if loading fails.
+Missing rows show a zero-deletion message instead of claiming success.
+
+The new folder widget tests cover empty/error states, folder counts, trimmed
+and duplicate names, guest navigation, cancel/confirmed deletion by ID,
+pending/failed writes, missing rows, and failed refreshes after create/delete.
+The five existing roster tests now open the roster screen directly.
+
+October 13, 2026 results: flutter analyze found no issues. All 11 widget tests
+passed (five roster tests and six folder tests). The tests simulate failures;
+no forced storage failure was performed on the emulator.
+
+Pixel_9 device checks also passed with the normal debug APK:
+- Empty folders showed an empty message. A blank name showed validation text.
+- Creating CheckpointFolder returned actual folder ID 4 with a displayed count
+  of 0. Trying that name again showed the duplicate message and kept the input.
+  A database query confirmed there was still only that one folder.
+- Delete confirmation named CheckpointFolder and warned about its cards.
+  Cancel kept the folder. Confirming deletion then returned to the empty list.
+- Guest roster showed IDs 2, 3, and 4 with the same names and ages. Back
+  returned to Folders. A final read-only query confirmed zero folders and zero
+  cards after cleanup, with the original three guests unchanged.
+
+This checkpoint tested empty-folder deletion. Deleting a folder that contains
+cards was checked at the database-method level earlier; the complete UI test
+with cards is still pending. No card screens or final submission files were
+created in this checkpoint.
 
 Course sources
 

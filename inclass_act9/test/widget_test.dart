@@ -58,7 +58,7 @@ Future<void> start(WidgetTester tester, FakeHelper helper) async {
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  await tester.pumpWidget(DirectoryApp(helper: helper));
+  await tester.pumpWidget(MaterialApp(home: DirectoryScreen(helper: helper)));
   await tester.pumpAndSettle();
 }
 
