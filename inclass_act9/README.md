@@ -203,6 +203,40 @@ evidence/T2_cards.png - two distinct Compass cards in Atlas
 evidence/T4_after.png - saved edit and both IDs after cold restart
 evidence/analysis_output.txt - actual analyzer output
 
+Release APK check - October 13, 2026
+
+Build command: flutter build apk --release
+Result: passed in 203.9 seconds; app-release.apk was 49,757,262 bytes (49.8 MB).
+The build printed a Java native-access warning but completed successfully.
+The project uses the generated debug signing key for this classroom release;
+it is a release-mode APK, not a debug build or a store-signed release.
+
+Copied the build output to submission/Activity09_Gohourou_Emmanuel.apk.
+Both files had this SHA-256:
+d14a9f1fddf2bde5e151b917925b217061c9b1797dd6422a1959ef2b8c1cc208
+
+Installed that exact submission copy on InClass09_Test, emulator-5556,
+Android 17 / API 37, using:
+adb -s emulator-5556 install -r submission/Activity09_Gohourou_Emmanuel.apk
+Install returned Success. The APK has ARM32, ARM64, and x86_64 libraries;
+this smoke test ran on ARM64. Pixel_9's Part I installation was not changed.
+The existing empty FreshFolder from T1b remained on the separate test target.
+
+Release check | Observed result | Status
+--- | --- | ---
+Create/read | Created ReleaseCheck, opened its empty list, then added ReleaseCard with Hearts and Release notes. The app returned card ID 1 and showed count 1; FreshFolder stayed at 0 | PASS
+Image fallback | The new card used the default null image reference and displayed its Hearts symbol | PASS
+Edit | Saved ID 1 as Release revised with Saved release notes. The same ID and count 1 remained | PASS
+Cold restart | System App info -> Force stop -> OK. No process remained; Android reported stopped=true. Relaunch reported COLD. ReleaseCheck still had ID 1, Release revised, Hearts, Saved release notes, and count 1. FreshFolder stayed at 0 | PASS
+Card delete | Confirmed Delete "Release revised" (ID 1). Feedback showed Deleted card ID 1; the empty message appeared and ReleaseCheck count became 0 | PASS
+Folder delete | Confirmed Delete "ReleaseCheck" and all its cards. ReleaseCheck disappeared; FreshFolder stayed with count 0 | PASS
+
+The same installed APK was used throughout. No data was cleared and no
+reinstallation occurred during the restart check. The normal release app
+was tested through its UI; no diagnostic entry point was included. The
+release screen had no debug banner. The temporary release records were
+removed through the app after testing. No app source changes were needed.
+
 Rubric mapping and remaining work
 
 Schema/data preservation: lib/database_helper.dart; T1, T4, T5; Q1-Q5.
@@ -210,10 +244,11 @@ Models/helper/CRUD: lib/folder.dart, lib/card_record.dart,
 lib/database_helper.dart, lib/folder_screen.dart, lib/card_screen.dart;
 T2, T3, T5, T6 and test/.
 Images/usability: lib/card_screen.dart, lib/folder_screen.dart; T1b and T6.
-Testing/evidence: the matrix and evidence/ above. Release smoke test pending.
+Testing/evidence: the T1-T6 matrix, evidence/, and release smoke test above.
 Critical thinking: reflection prompts 1-3 and two U-pool questions pending.
 README/delivery: this file, pubspec.yaml, pubspec.lock, and source files.
-Final release APK, reflection document, and submission folder are pending.
+The tested release APK is in submission/. The reflection document and
+repository-link text file are still pending.
 Nothing has been submitted to iCollege.
 
 Final submission folder will contain only:
