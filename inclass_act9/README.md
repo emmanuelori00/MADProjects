@@ -112,8 +112,8 @@ and its storage was not cleared.
 T1b fresh schema: PASS. Pixel_10a, emulator-5556, had no installation of
 com.example.inclass_act8 before installing this build. Expected: version 2
 with all three tables and no records. Observed: my_table, folders, and cards
-exist; each has zero records. Opening an empty folder is still pending because
-the folder screen belongs to a later checkpoint. Full T1b is not complete yet.
+exist; each has zero records. Opening an empty folder on this separate target is still pending. Full T1b
+is not complete yet.
 
 Read-only SQL checks on both app connections returned:
 PRAGMA user_version: 2
@@ -197,7 +197,7 @@ Folder screen checkpoint
 The app now starts on the Folders screen. It lists folder names and card
 counts, creates folders, and asks before deleting a named folder and its
 cards. Guest roster opens the original Part I screen; Back returns to Folders.
-Opening a folder and managing its cards belong to the next checkpoint.
+Card actions were added in the checkpoint below.
 
 The screen follows the Part I loading and error-handling pattern. Blank names
 are rejected. Duplicate names show a message and keep the entered name. A
@@ -229,6 +229,56 @@ This checkpoint tested empty-folder deletion. Deleting a folder that contains
 cards was checked at the database-method level earlier; the complete UI test
 with cards is still pending. No card screens or final submission files were
 created in this checkpoint.
+
+Card screen checkpoint
+
+Tapping a folder now opens its cards by folder ID. The same form adds and
+edits a card. It requires a nonblank title, one of the four suits, and an
+existing folder. Notes are optional. Selecting a different folder saves that
+folder's ID. Returning to Folders reloads its card counts.
+
+Duplicate titles are allowed. The list shows IDs so the two cards can be told
+apart. Edits and deletes target those IDs. Cancel edit makes no write. Delete
+confirmation shows the title and ID before changing the database. Missing
+rows show a zero-update/delete message instead of claiming success.
+
+The form keeps input after a failed write and disables controls while busy.
+After a successful write it clears the form, then reloads the list. If that
+read fails, Refresh retries only the read. Loading, empty, and failed-read
+states are shown separately. The screen contains no SQL.
+
+Image choice: new cards leave image_ref as SQL NULL and show a suit symbol.
+This is the simple option allowed by the assignment. The screen always uses
+the symbol, even if an older row has an unusable reference. It does not fetch
+images or need network access. The tradeoff is that it cannot show custom
+artwork. No image assets, picker, or extra dependencies were added.
+
+October 13, 2026 automated checks: flutter analyze found no issues. All 19
+widget tests passed: five roster, six folder, and eight card-screen tests.
+The card tests cover validation/defaults, all four symbols, duplicate-title
+identity, edit/delete cancellation, folder moves and count refresh, missing
+rows/parents, failed reads/writes, and safe refresh retries. Failure cases
+use a fake helper; they do not claim a forced device-storage failure.
+
+Pixel_9 checks with the normal debug APK also passed:
+- Opened temporary folder CheckpointCards (actual ID 5). It showed the empty
+  card message. Submitting a blank title showed validation without adding a row.
+- Added two cards named CheckpointCard, with actual IDs 4 and 5. Card 4 had
+  First notes; card 5 had empty notes. Both had Hearts and a NULL image_ref.
+  The list showed two cards and their suit symbols.
+- Changed card 5's title in the form, then canceled. A read-only database
+  query confirmed both original titles and values were unchanged.
+- Saved card 4 as CheckpointRevised with Clubs and Updated notes. The query
+  confirmed only ID 4 changed. ID 5 still had its original title and values.
+- Canceled deleting ID 5; the list still showed two cards. Confirmed deletion
+  next; only ID 4 remained. Back on Folders, the count refreshed to 1.
+- Deleted the temporary folder through its confirmation. Its remaining card
+  was removed too. The final database had zero folders/cards, no orphan rows,
+  and integrity_check returned ok. Guest IDs 2, 3, and 4 were unchanged.
+
+These were checkpoint tests with temporary data. The assignment's full T1-T6
+sequence, required final screenshots, release APK, and reflection document
+are still pending. No submission files were created in this checkpoint.
 
 Course sources
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'database_helper.dart';
+import 'card_screen.dart';
 import 'folder.dart';
 
 class FolderScreen extends StatefulWidget {
@@ -145,6 +146,19 @@ class _FolderScreenState extends State<FolderScreen> {
     }
   }
 
+  Future<void> _openFolder(Folder folder) async {
+    if (_busy || _error != null) return;
+    setState(() => _busy = true);
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CardScreen(helper: widget.helper, folder: folder),
+      ),
+    );
+    if (!mounted) return;
+    await _load();
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
@@ -201,6 +215,7 @@ class _FolderScreenState extends State<FolderScreen> {
           for (final folder in _folders)
             ListTile(
               title: Text(folder.name),
+              onTap: () => _openFolder(folder),
               subtitle: Text('Cards: ${folder.cardCount}'),
               trailing: IconButton(
                 tooltip: 'Delete ${folder.name}',
