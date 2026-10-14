@@ -245,10 +245,12 @@ lib/database_helper.dart, lib/folder_screen.dart, lib/card_screen.dart;
 T2, T3, T5, T6 and test/.
 Images/usability: lib/card_screen.dart, lib/folder_screen.dart; T1b and T6.
 Testing/evidence: the T1-T6 matrix, evidence/, and release smoke test above.
-Critical thinking: reflection prompts 1-3 and two U-pool questions pending.
+Critical thinking: submission/Gohourou_Emmanuel_CriticalThinking.docx answers
+prompts 1-3 and U1/U4 using the recorded tests and source. A plain-text copy
+is in reflection.txt. Proposed follow-up tests are labeled as unrun.
 README/delivery: this file, pubspec.yaml, pubspec.lock, and source files.
-The tested release APK is in submission/. The reflection document and
-repository-link text file are still pending.
+The tested release APK and reflection document are in submission/. The
+repository-link text file and final delivery checks are still pending.
 Nothing has been submitted to iCollege.
 
 Final submission folder will contain only:

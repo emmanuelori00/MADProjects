@@ -1,0 +1,63 @@
+Activity 09 Critical Thinking
+
+Emmanuel Gohourou | ogohourou1
+CSC 4360 | Undergraduate | October 13, 2026
+
+Prompt 1 Failure reconstruction
+
+The guest rows being visible does not prove the cards have the right folder IDs. One cause could be the form saving Harbor's ID for every card. Another could be correct saved IDs but a list query missing its folder filter, so Harbor displays all cards.
+
+I would first read SELECT id, title, folder_id FROM cards ORDER BY id; without changing anything. If all three folder_id values point to Harbor, I would check the value passed into insertCard. If the stored values are correct, I would check getCards and its whereArgs against the folder selected on screen. I would not clear or reseed the database.
+
+In my T4 result, cards 6 and 7 still belonged to Atlas 6, and Signal 8 belonged to Harbor 7. Counts stayed 2 and 1 after force-stop. T1 kept guest IDs 2, 3, and 4 with the same names and ages. README Q2-Q3 and T4_after.png record these results.
+
+Prompt 2 Delete policy
+
+For the clinic example, I would use ON DELETE RESTRICT for patient records that have billing or audit rows. The screen should explain why deletion is blocked and offer marking the patient inactive. A proposed test would create a fictional patient with a bill, attempt deletion, and check that both rows remain. I have not run this clinic test.
+
+My catalogue uses CASCADE because a folder owns its cards. In T5, I first deleted Compass 7. Deleting Atlas 6 then returned 1 parent row and removed its remaining card 6. Harbor 7 and Signal 8 stayed. This is useful here, but losing billing records the same way would be a problem.
+
+Prompt 3 Missing artwork
+
+I would read Signal's image_ref first, then follow these checks:
+
+1. NULL or empty: show the suit symbol.
+2. Malformed reference: check spelling and whether it is a usable asset path, file path, or URL.
+3. Bundled asset: check that the file exists in the project and is registered in pubspec.yaml.
+4. App-private file: check whether the saved path still points to an existing file. The file may have been deleted.
+5. URL: check whether loading reports an error. The network or server may be unavailable.
+
+The title, ID, suit, notes, and folder should stay visible with a placeholder. Missing artwork is not a reason to delete the card or its notes. My choice was NULL with a suit symbol. T6 showed Signal 8, its Spades symbol, and Harbor notes. This proves the null fallback works, not that files or URLs work. It is simple and offline, but it does not show custom artwork.
+
+AI Alchemist's Lab
+
+Selected questions: U1 and U4. These answers use the supplied claims, recorded tests, and source code. No separate AI-service prompts or responses were used for these questions.
+
+U1 The twin card identity trick
+
+Claim: "A title is unique enough to edit a card."
+
+Prediction (retrospective): this assumes titles are unique. I would expect a title-based update to match both Compass cards. This prediction is written after the completed tests.
+
+Evidence: T2 had Compass IDs 6 and 7 in Atlas. T3 changed only ID 6 to Compass revised with Atlas notes and returned 1 affected row. ID 7 stayed Compass. In lib/database_helper.dart, updateCard uses where: 'id = ?' with the selected card.id. A title condition such as title = 'Compass' would have matched both original rows. I did not run that unsafe update.
+
+Challenge and safer design: adding a second card with the same title exposes the claim's flaw. Titles can also change. The result supports using IDs, but does not prove every possible edit is correct. I would keep IDs visible and save by the selected ID. Proposed follow-up, not run: make two new matching titles, rename the second one, and verify that only its ID changes. If the first row changes too, the fix fails. See README T2-T3 and T2_cards.png.
+
+U4 The phantom double save
+
+Claim: "If Refresh fails after Save, press Save again."
+
+Prediction (retrospective): this assumes a failed refresh means the insert failed. I would expect pressing Add again after a successful insert to create another row. This prediction uses the completed tests.
+
+Evidence: lib/card_screen.dart, _save, awaits insertCard or updateCard before calling _refreshAfterWrite. A read failure is caught separately and offers Refresh. The existing test in test/card_screen_test.dart starting at line 249 used a fake helper: card ID 100 saved, the read failed, and Refresh left one card and one successful write. The separate failed-write case kept the entered notes. All 19 widget tests passed. This failure was simulated; it was not observed on the device.
+
+Challenge and safer design: a failed read cannot tell me whether the write failed. A returned insert ID plus a read-only query for that ID would show a successful save. If that query also fails, the outcome remains uncertain. I would show 'Saved card ID 100. Refresh failed. Tap Refresh to retry.' and retry only the read. Proposed follow-up, not run: simulate several failed refreshes after one save, then recover. There should still be one row and one successful insert; a second insert would disprove the retry design.
+
+Sources and assistance
+
+Course assignment:
+https://codd.cs.gsu.edu/~lhenry23/mad/ica/act09/v2/index2.html
+Course lecture:
+https://codd.cs.gsu.edu/~lhenry23/mad/ica/act09/v2/notes/activity09-lecture.html
+
+Project evidence: README.md, evidence/T2_cards.png, evidence/T4_after.png, lib/database_helper.dart, lib/card_screen.dart, and test/card_screen_test.dart. AI writing assistance helped organize the explanations; the observations come from the recorded tests.
