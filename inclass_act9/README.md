@@ -237,7 +237,7 @@ was tested through its UI; no diagnostic entry point was included. The
 release screen had no debug banner. The temporary release records were
 removed through the app after testing. No app source changes were needed.
 
-Rubric mapping and remaining work
+Rubric mapping and submission files
 
 Schema/data preservation: lib/database_helper.dart; T1, T4, T5; Q1-Q5.
 Models/helper/CRUD: lib/folder.dart, lib/card_record.dart,
@@ -249,14 +249,24 @@ Critical thinking: submission/Gohourou_Emmanuel_CriticalThinking.docx answers
 prompts 1-3 and U1/U4 using the recorded tests and source. A plain-text copy
 is in reflection.txt. Proposed follow-up tests are labeled as unrun.
 README/delivery: this file, pubspec.yaml, pubspec.lock, and source files.
-The tested release APK and reflection document are in submission/. The
-repository-link text file and final delivery checks are still pending.
-Nothing has been submitted to iCollege.
+Final folder checks passed on October 13, 2026. The assignment URL opened
+without signing in (HTTP 200), and the GitHub repository is public. All 41
+assignment files at commit da10d13 matched the remote source, evidence, APK,
+and reflection. Generated build folders and local database files are not
+tracked in this assignment.
 
-Final submission folder will contain only:
+The APK still matches the tested SHA-256 above. The two-page reflection
+matches reflection.txt and includes prompts 1-3, U1/U4, and references.
+The submission folder contains exactly these three required files:
 github_link.txt
 Activity09_Gohourou_Emmanuel.apk
 Gohourou_Emmanuel_CriticalThinking.docx
+
+github_link.txt points directly to this assignment on assignment/inclass09:
+https://github.com/emmanuelori00/MADProjects/tree/assignment/inclass09/inclass_act9
+
+Nothing has been submitted to iCollege. Uploads and receipt verification
+have not been performed.
 
 Course sources
 
