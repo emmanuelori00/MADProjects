@@ -144,8 +144,53 @@ before testing the later folder screen and final APK.
 
 flutter analyze: no issues (evidence/analysis_output.txt).
 flutter test: all five existing widget tests passed. These cover the guest
-screen, not folder/card actions. Folder/card models, actions, screens, and
-tests T2-T6 have not started. Cascade deletion behavior will be tested in T5.
+screen, not folder/card actions. Full screen tests T2-T6 are still pending.
+
+Models and database methods checkpoint
+
+Folder and CardRecord now convert between Dart objects and database maps.
+Folder also holds the card count from the query; that count is not written
+back as a table column. New records get their IDs from SQLite inserts.
+
+DatabaseHelper has insertFolder, getFoldersWithCounts, getCards, insertCard,
+updateCard, deleteCard, and deleteFolder. The LEFT JOIN keeps empty folders
+with count zero. Reads filter by folder ID; edits and deletes use row IDs and
+bound values. Update/delete return the number of affected rows, including 0
+when a row is missing. Errors pass to the caller for the future screen to show.
+
+The helper trims folder names and card titles and rejects blank values. It
+checks the four allowed suits. The foreign key rejects a missing parent.
+Duplicate folder names are rejected by UNIQUE without replacing the old row.
+Names remain case-sensitive, and duplicate card titles are allowed. Omitted
+notes are empty text; an omitted or blank image reference becomes SQL NULL.
+
+On October 13, 2026, a temporary debug entry point tested these methods against
+the real SQLite database on Pixel_9. All 23 checks passed. This entry point
+used disposable records and is outside the project and submission.
+
+Expected and observed results:
+- Temporary folders received IDs 1, 2, and 3; empty folders had count 0.
+- A padded name containing an apostrophe was trimmed and saved correctly with
+  an ISO date. Its lowercase version was allowed; an exact duplicate failed.
+- Cards 1 and 2 had the same title in folder 1. Card 3 belonged to folder 2.
+  Counts were 2 and 1, and each query returned only its folder's cards.
+- Editing card 1 returned 1 and saved its title and notes. Card 2 was unchanged.
+- Blank names/titles, an invalid suit, folder ID 0, and updating without a
+  saved card ID were rejected. Inserting under deleted folder 3 also failed.
+- Deleting card 2 returned 1, then 0 when repeated. Updating that missing card
+  returned 0. Folder 1's count became 1.
+- Deleting folder 1 returned 1 and removed its remaining card. Repeating it
+  returned 0. Folder 2 and card 3 stayed intact until test cleanup.
+- Cleanup removed all temporary folders/cards. The three original guest rows
+  stayed unchanged. Generated IDs were not reset; later tests must use the
+  actual IDs returned by inserts.
+
+flutter analyze reported no issues and all five existing widget tests passed.
+These method checks do not replace T2-T6: the folder/card screens, visible
+validation feedback, cancel/confirmation flows, and restart tests come later.
+The normal debug app was restored and launched successfully on Pixel_9. A
+final read-only database check found the same three guests, zero folders,
+zero cards, and no orphan rows.
 
 Course sources
 
