@@ -1,0 +1,21 @@
+name: signup_app
+description: A practice signup form for Snack Club.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.2
+
+dependencies:
+  animated_text_kit: ^4.3.0
+  confetti: ^0.8.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
