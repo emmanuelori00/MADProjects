@@ -1,0 +1,21 @@
+name: autumn_products
+description: A small product app for In-Class 12.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.2
+
+dependencies:
+  cloud_firestore: ^7.1.0
+  firebase_core: ^5.1.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
