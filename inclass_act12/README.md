@@ -2,7 +2,9 @@
 
 This is my product app for the Firebase activity. It uses Flutter on Android and a Firestore collection called products. Each product has a name and a number for its price.
 
-So far, the assignment starter can add, show, and edit products. Delete, search, price filters, and Reset still need to be added. The app hasnt been tested with the database yet.
+The app can add, show, edit, and delete products. Search ignores capitals and matches part of a name. Min and max prices include both ends of the range. Reset clears all three filters. Invalid prices and ranges show a message.
+
+The Android build works, and the app opens on the emulator with an empty product list. All 14 local tests passed. The full database tests and report still need to be finished.
 
 To run it:
 
