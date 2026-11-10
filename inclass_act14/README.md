@@ -14,4 +14,4 @@ The app uses one FCMService for messages and notification taps. A message with a
 
 The screen also shows the last handler, message count, and message ID. The service cancels its listeners when the screen closes.
 
-The Android app builds and opens. The four notification tests still need to be checked.
+The Android app builds and opens. All four tests passed on the Android 17 emulator: foreground, background notification tap, cold start from a notification, and an invalid asset value. The report in submission has the results and screenshots.
