@@ -10,4 +10,8 @@ Setup
 
 The Firebase config files stay local. FlutterFire creates them during setup.
 
-So far, Firebase starts before the app opens. The background handler is registered, and the two images are included. The message service and notification tests are next.
+The app uses one FCMService for messages and notification taps. A message with action=update_ui and asset=promo shows the event image. Using asset=default shows the starting image. Bad values leave the last title and image alone and show a message.
+
+The screen also shows the last handler, message count, and message ID. The service cancels its listeners when the screen closes.
+
+The Android app builds and opens. The four notification tests still need to be checked.
