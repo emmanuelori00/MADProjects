@@ -1,5 +1,1 @@
-{
-  "firestore": {
-    "rules": "firestore.rules"
-  }
-}
+{"firestore":{"rules":"firestore.rules"},"flutter":{"platforms":{"android":{"default":{"projectId":"mad-ica16-class-a-quiz-4c28","appId":"1:983415919065:android:1639eb2e9fdec83d7dc9c8","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"mad-ica16-class-a-quiz-4c28","configurations":{"android":"1:983415919065:android:1639eb2e9fdec83d7dc9c8"}}}}}}

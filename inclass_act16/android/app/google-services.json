@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "983415919065",
+    "project_id": "mad-ica16-class-a-quiz-4c28",
+    "storage_bucket": "mad-ica16-class-a-quiz-4c28.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:983415919065:android:1639eb2e9fdec83d7dc9c8",
+        "android_client_info": {
+          "package_name": "edu.gsu.mad.inclass_act16"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtZFs4M6tVKmrz9yZ7ZuK8SXeEDD-EBFg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
