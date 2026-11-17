@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 class CompletedAttempt {
   final int score;
@@ -38,6 +39,8 @@ class CompletedAttempt {
   }
 }
 
+enum SaveTest { normal, unavailable, quota, lostAcknowledgement }
+
 class AttemptStore {
   final FirebaseAuth auth;
   final FirebaseFirestore db;
@@ -62,8 +65,17 @@ class AttemptStore {
     return _attempts().doc(id);
   }
 
-  Future<void> save(DocumentReference<Map<String, dynamic>> ref,
-      CompletedAttempt attempt) async {
+  Future<void> save(
+      DocumentReference<Map<String, dynamic>> ref, CompletedAttempt attempt,
+      {SaveTest test = SaveTest.normal}) async {
+    if (kDebugMode &&
+        (test == SaveTest.unavailable || test == SaveTest.quota)) {
+      throw FirebaseException(
+          plugin: 'cloud_firestore',
+          code: test == SaveTest.unavailable
+              ? 'unavailable'
+              : 'resource-exhausted');
+    }
     final payload = {
       ...attempt.fields,
       'submittedAt': FieldValue.serverTimestamp()

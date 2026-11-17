@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'attempt_store.dart';
@@ -43,6 +44,7 @@ class _QuizHomeState extends State<QuizHome> {
   List<String> answers = [];
   CompletedAttempt? completed;
   String message = '';
+  SaveTest nextSaveTest = SaveTest.normal;
   bool writePending = false;
   bool unresolved = false;
   bool checkingOldRound = false;
@@ -78,6 +80,7 @@ class _QuizHomeState extends State<QuizHome> {
     questions = [];
     answers = [];
     completed = null;
+    nextSaveTest = SaveTest.normal;
     show(RoundState.loading, 'Loading questions…');
     try {
       final loaded = await loader.load();
@@ -108,14 +111,21 @@ class _QuizHomeState extends State<QuizHome> {
         writePending) return;
     final ref = round!;
     final attempt = completed!;
+    final test = nextSaveTest;
+    nextSaveTest = SaveTest.normal;
     unresolved = true;
     writePending = true;
     show(RoundState.submitting, 'Saving score…');
     try {
-      final writing = store.save(ref, attempt).whenComplete(() {
+      final writing = store.save(ref, attempt, test: test).whenComplete(() {
         if (current(ref)) setState(() => writePending = false);
       });
       await writing.timeout(const Duration(seconds: 10));
+      if (kDebugMode && test == SaveTest.lostAcknowledgement && current(ref)) {
+        show(RoundState.saveUnknown,
+            'Test: acknowledgement hidden. Check this round on the server.');
+        return;
+      }
     } on FormatException catch (e) {
       if (current(ref)) {
         unresolved = false;
@@ -129,8 +139,10 @@ class _QuizHomeState extends State<QuizHome> {
         show(RoundState.permissionDenied,
             'Permission denied. The score could not be saved.');
       } else {
+        final injected = kDebugMode &&
+            (test == SaveTest.unavailable || test == SaveTest.quota);
         show(RoundState.saveUnknown,
-            '${cloudError(e)} Check this round on the server.');
+            '${injected ? "Test: " : ""}${cloudError(e)} Check this round on the server.');
       }
       return;
     }
@@ -242,7 +254,32 @@ class _QuizHomeState extends State<QuizHome> {
           answers: answers,
           actions: Column(children: [
             SelectableText(round!.path),
-            if (message.isNotEmpty) Text(message),
+            if (message.isNotEmpty)
+              Semantics(
+                  container: true, liveRegion: true, child: Text(message)),
+            if (kDebugMode && state == RoundState.readyToSubmit)
+              PopupMenuButton<SaveTest>(
+                tooltip: 'Test next save',
+                onSelected: (value) => setState(() => nextSaveTest = value),
+                itemBuilder: (_) => const [
+                  PopupMenuItem(
+                      value: SaveTest.normal, child: Text('Normal save')),
+                  PopupMenuItem(
+                      value: SaveTest.unavailable,
+                      child: Text('Server unavailable')),
+                  PopupMenuItem(
+                      value: SaveTest.quota, child: Text('Quota reached')),
+                  PopupMenuItem(
+                      value: SaveTest.lostAcknowledgement,
+                      child: Text('Hide acknowledgement')),
+                ],
+                child: Text('Test next save: ${switch (nextSaveTest) {
+                  SaveTest.normal => "normal",
+                  SaveTest.unavailable => "server unavailable",
+                  SaveTest.quota => "quota reached",
+                  SaveTest.lostAcknowledgement => "hide acknowledgement",
+                }}'),
+              ),
             if (state == RoundState.readyToSubmit)
               FilledButton(
                   onPressed: submit, child: const Text('Submit score')),
